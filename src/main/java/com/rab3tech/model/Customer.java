@@ -29,7 +29,7 @@ public class Customer {
 	private String address;
 	@Column(name="mobile", nullable=false)
 	private String mobile;
-	@Column(name="email", nullable=false)
+	@Column(name="email", nullable=false, unique=true)
 	private String email;
 	@Column(name="password", nullable=false)
 	private String password;
