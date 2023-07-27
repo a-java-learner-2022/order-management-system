@@ -57,8 +57,9 @@ public class CustomerController {
 	}
 	
 	@GetMapping(value="/findByFirstname")
-	public List<Customer> findCustomerByFirstname(@RequestParam("firstname") String firstname) {
-		return this.customerService.findByFirstname(firstname);
+	public ResponseEntity<?> findCustomerByFirstname(@RequestParam("firstname") String firstname) {
+		List<Customer> customers = this.customerService.findByFirstname(firstname);
+		return ResponseEntity.ok().body(customers);
 	}
 	
 	@DeleteMapping(value="/delete/{customer_id}")
@@ -73,13 +74,14 @@ public class CustomerController {
 	}
 	
 	@GetMapping(value="/findByLastname")
-	public ResponseEntity<?>findByLastname(@RequestParam("lastname") String lastname){
+	public ResponseEntity<?> findByLastname(@RequestParam("lastname") String lastname){
 		return ResponseEntity.ok().body(this.customerService.findByLastname(lastname));
 	}
 	
 	@GetMapping(value="/findByFirstnameAndLastname")
-	public List<Customer> findByFirstnameAndLastname(@RequestParam("firstname") String firstname,@RequestParam("lastname") String lastname){
-		return this.customerService.findByFirstnameAndLastname(firstname, lastname);
+	public ResponseEntity<?> findByFirstnameAndLastname(@RequestParam("firstname") String firstname,@RequestParam("lastname") String lastname){
+		List<Customer> customers = this.customerService.findByFirstnameAndLastname(firstname, lastname);
+		return ResponseEntity.ok().body(customers);
 	}
 	
 	
@@ -89,6 +91,7 @@ public class CustomerController {
 		return this.customerService.findByAddress(address);
 	}
 	
+	//filter with keywords
 	@GetMapping(value ="/getByAddress")
 	public List<Customer> getByAddress(@RequestParam("address") String adddress){
 		return this.customerService.findByAddress(adddress);
@@ -96,13 +99,16 @@ public class CustomerController {
 	
 
 	@PatchMapping(value ="/updateViaPatch/{customerid}")
-	public Customer updateCustomerViaPatch(@PathVariable("customerid") Long customerId, @RequestParam("address") String address){
-		return this.customerService.updateCustomerViaPatch(customerId, address);
+	public ResponseEntity<?> updateCustomerViaPatch(@PathVariable("customerid") Long customerId, @RequestParam("address") String address){
+		Customer customer = this.customerService.updateCustomerViaPatch(customerId, address);
+		return ResponseEntity.ok().body(customer);
 	}
 	
 	@GetMapping(value ="/countCustomer")
-	public String  countCustomer() {
-		return "The total customer are " + this.customerService.countCustomer();
+	public ResponseEntity<?> countCustomer() {
+		Long count = this.customerService.countCustomer();
+		String message = "The total customers are " + count;
+		return ResponseEntity.ok().body(message);
 	}
 	
 }
