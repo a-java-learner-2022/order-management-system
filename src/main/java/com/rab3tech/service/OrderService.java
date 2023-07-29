@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.rab3tech.enums.OrderStatus;
+import com.rab3tech.enums.PaymentMode;
 import com.rab3tech.model.Customer;
 import com.rab3tech.model.Order;
 import com.rab3tech.model.Product;
@@ -33,14 +35,27 @@ public class OrderService {
 		Order order = new Order();
 		order.setOrderDate(orderRequest.getOrderDate());
 		order.setDeliveryAddress(orderRequest.getDeliveryAddress());
-		order.setOrderStatus(orderRequest.getOrderStatus());
-		order.setPaymentMode(orderRequest.getPaymentMode());
+		order.setOrderStatus(OrderStatus.IN_PROGESS.toString());
+		
+		if (orderRequest.getPaymentMode().equals(PaymentMode.CREDIT_CARD.toString())) {
+			order.setPaymentMode(PaymentMode.CREDIT_CARD.toString());
+		}else if (orderRequest.getPaymentMode().equals(PaymentMode.DEBIT_CARD.toString())) {
+			order.setPaymentMode(PaymentMode.DEBIT_CARD.toString());
+		}else {
+			order.setPaymentMode(PaymentMode.CASH_ON_DELIVERY.toString());
+		}
+		
 		order.setProductPurchaseQuantity(orderRequest.getProductPurchaseQuantity());
-		order.setProductTotalPrice(orderRequest.getProductTotalPrice());
+		
 		//to fetch whole product by id.
 		Optional<Product> optionalProduct =  this.productRepository.findById(orderRequest.getProductId());
 		 order.setProduct(optionalProduct.get());
 		 
+		 Double productPrice = optionalProduct.get().getPrice();
+		 
+		 Double purchaseQuantity = Double.valueOf(orderRequest.getProductPurchaseQuantity());
+		 order.setProductTotalPrice(productPrice*purchaseQuantity);
+		//Double totalPrice = productPrice* purchaseQuantity.doubleValue();
 		 Customer customer =this.customerRepository.findById(orderRequest.getCustomerId()).get();
 		 order.setCustomer(customer);
 		 order = this.orderRepository.save(order);
