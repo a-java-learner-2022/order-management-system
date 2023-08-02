@@ -1,9 +1,15 @@
 package com.rab3tech.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.rab3tech.model.Product;
@@ -12,6 +18,17 @@ import com.rab3tech.request.ProductRequest;
 
 @Service
 public class ProductService {
+	
+	//Logger - keeeps of aaplication whole flow
+	Logger logger = LoggerFactory.getLogger(ProductService.class);
+	
+/*
+ * 3 levels fo logger
+ * info  - (printing 
+ * error - 
+ * debug - 
+ * warn  - (giving warning)
+ */
 
 	@Autowired
 	private ProductRepository productRepository;
@@ -21,28 +38,63 @@ public class ProductService {
 		// object,
 		// then save product model object and return it.
 
+		logger.info("saveProduct API started");
 		Product product = new Product();
 		product.setProductName(productRequest.getProductName());
 		product.setPrice(productRequest.getPrice());
 		product.setQuantity(productRequest.getQuantity());
 		product.setDescription(productRequest.getDescription());
 		product = this.productRepository.save(product);
+		logger.info("saveProduct API ended");
 		return product;
 	}
 
 	public Product findById(Long productId) {
+		logger.info("findById API started");
+		
 		Optional<Product> optional = this.productRepository.findById(productId);
 
 		if (optional.isPresent()) {
 			Product product = optional.get();
+			logger.info("findById API ended.");
 			return product;
 		} else {
+			logger.info(" Product not found : findById API ended.");
 			return null;
+			
 		}
+		
 	}
 
 	public List<Product> findAll() {
 		return this.productRepository.findAll();
+	}
+	
+	/*
+	 * Pagination - fetching all records page by page with 
+	 * each page shows only certain number of records. 
+	 * 
+	 * two parameters - 
+	 * page number - total number of pages,
+	 * page size - how many records needs to be stored in each page.
+	 * 
+	 * pagesize = 10, total number of records = 36
+	 * 0th page = 1 - 10
+	 * 1st page = 11 - 20
+	 * 2nd page = 21 - 30
+	 * 3rd page = 31 - 32
+	 */
+	
+	public List<Product> getAllProductsWithPagination(Integer pageNumber, Integer pageSize) {
+		Page<Product> pageProducts =this.productRepository.findAll(PageRequest.of(pageNumber, pageSize, Sort.by("productName").ascending()));
+		
+		//converting pageOfProducts to listOfProducts and return it.
+		List<Product> listProducts = new ArrayList<>();
+		
+		for (Product pageProduct: pageProducts) {
+			listProducts.add(pageProduct);
+		}
+		return listProducts;
 	}
 
 	

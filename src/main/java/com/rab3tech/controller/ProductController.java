@@ -2,11 +2,12 @@ package com.rab3tech.controller;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.rab3tech.model.Product;
 import com.rab3tech.request.ProductRequest;
+import com.rab3tech.response.ProductResponse;
 import com.rab3tech.service.ProductService;
 
 @RestController
@@ -26,6 +28,7 @@ public class ProductController {
 	@Autowired
 	private ProductService productService;
 	
+	Logger logger = LoggerFactory.getLogger(ProductController.class);
 
 	// @RequestBody - it takes input from frontend in json foramat and passes it to API
 	@PostMapping(value="/save")
@@ -35,16 +38,36 @@ public class ProductController {
 		return ResponseEntity.ok().body(product);
 	}
 	
+	@PostMapping(value="/saveProduct")
+	public ProductResponse saveProduct1(@RequestBody ProductRequest productRequest) {
+		logger.info("saveProduct API started");
+		ProductResponse productResponse = new ProductResponse();
+		Product saveProduct = this.productService.save(productRequest);
+		productResponse.setData(saveProduct);
+		productResponse.setMessage("The product is saved successfully.");
+		productResponse.setCode("201" + " created");
+		logger.info("saveProduct API ended");
+		return productResponse;
+	}
 	
 	@GetMapping(value="/findById/{productId}")
 	public ResponseEntity<?>findById(@PathVariable("productId") Long productId) {
+		logger.info("findById API started.");
 		Product product = this.productService.findById(productId);
+		logger.info("findById API ended.");
 		return ResponseEntity.ok().body(product);
 	}
 	
 	@GetMapping(value="/findAll")
 	public ResponseEntity<?> findAll(){
 		List<Product> products =  this.productService.findAll();
+		return ResponseEntity.ok().body(products);
+		
+	}
+	
+	@GetMapping(value="/findAllWithPage")
+	public ResponseEntity<?> findAllWithPagination(@RequestParam("pagesize") Integer pageSize, @RequestParam("pagenumber") Integer pageNumber){
+		List<Product> products =  this.productService.getAllProductsWithPagination(pageNumber, pageSize);
 		return ResponseEntity.ok().body(products);
 		
 	}
