@@ -52,7 +52,6 @@ public class OrderService {
 		 order.setProduct(optionalProduct.get());
 		 
 		 Double productPrice = optionalProduct.get().getPrice();
-		 
 		 Double purchaseQuantity = Double.valueOf(orderRequest.getProductPurchaseQuantity());
 		 order.setProductTotalPrice(productPrice*purchaseQuantity);
 		//Double totalPrice = productPrice* purchaseQuantity.doubleValue();
@@ -99,13 +98,39 @@ public class OrderService {
 			order.setOrderDate(orderRequest.getOrderDate());
 			order.setDeliveryAddress(orderRequest.getDeliveryAddress());
 			order.setOrderStatus(orderRequest.getOrderStatus());
-			order.setPaymentMode(orderRequest.getPaymentMode());
+			
+			//order status
+			if (orderRequest.getOrderStatus().equals(OrderStatus.SHIPPED.toString())) {
+				order.setOrderStatus(OrderStatus.SHIPPED.toString().toString());
+			}else if(orderRequest.getOrderStatus().equals(OrderStatus.DELIEVERED.toString())) {
+				order.setOrderStatus(OrderStatus.DELIEVERED.toString());
+			}else if (orderRequest.getOrderStatus().equals(OrderStatus.CANCELLED.toString())) {
+				order.setOrderStatus(OrderStatus.CANCELLED.toString());
+			}else if (orderRequest.getOrderStatus().equals(OrderStatus.RETURNED.toString())) {
+				order.setOrderStatus(OrderStatus.RETURNED.toString());
+			}else {
+				order.setOrderStatus(OrderStatus.IN_PROGESS.toString());
+			}
+				
+		
+			// payment mode
+			if (orderRequest.getPaymentMode().equals(PaymentMode.CREDIT_CARD.toString())) {
+				order.setPaymentMode(PaymentMode.CREDIT_CARD.toString());
+			}else if (orderRequest.getPaymentMode().equals(PaymentMode.DEBIT_CARD.toString())) {
+				order.setPaymentMode(PaymentMode.DEBIT_CARD.toString());
+			}else {
+				order.setPaymentMode(PaymentMode.CASH_ON_DELIVERY.toString());
+			}
 			order.setProductPurchaseQuantity(orderRequest.getProductPurchaseQuantity());
-			order.setProductTotalPrice(orderRequest.getProductTotalPrice());
-			//to fetch whole product by id.
+
+			// product --> set product, get product price, get purchased quantity & calculate totalPrice
 			Optional<Product> optionalProduct =  this.productRepository.findById(orderRequest.getProductId());
 			 order.setProduct(optionalProduct.get());
-			 
+			 Double productPrice = optionalProduct.get().getPrice();
+			 Double purchaseQuantity = Double.valueOf(orderRequest.getProductPurchaseQuantity());
+			 order.setProductTotalPrice(productPrice*purchaseQuantity);
+		
+			 // customer update 
 			 Customer customer =this.customerRepository.findById(orderRequest.getCustomerId()).get();
 			 order.setCustomer(customer);
 			 order = this.orderRepository.save(order);
@@ -115,18 +140,7 @@ public class OrderService {
 	}
 	
 
-	
-//	public Order updateOrderViaPatch(Long orderId, String address) {
-//		Optional<Order> optional = this.orderRepository.findById(orderId);
-//		Order updatedOrder = null;
-//		if (optional.isPresent()) {
-//			Order order = optional.get();
-//			order.setAddress(address);
-//			updatedOrder = this.orderRepository.save(order);
-//		}
-//		return  updatedOrder;
-//	}
-	
+
 	
 	public Long countOrder() {
 		long count = orderRepository.count();
