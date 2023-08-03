@@ -18,17 +18,13 @@ import com.rab3tech.request.ProductRequest;
 
 @Service
 public class ProductService {
-	
-	//Logger - keeeps of aaplication whole flow
+
+	// Logger - keeeps of aaplication whole flow
 	Logger logger = LoggerFactory.getLogger(ProductService.class);
-	
-/*
- * 3 levels fo logger
- * info  - (printing 
- * error - 
- * debug - 
- * warn  - (giving warning)
- */
+
+	/*
+	 * 3 levels fo logger info - (printing error - debug - warn - (giving warning)
+	 */
 
 	@Autowired
 	private ProductRepository productRepository;
@@ -44,60 +40,58 @@ public class ProductService {
 		product.setPrice(productRequest.getPrice());
 		product.setQuantity(productRequest.getQuantity());
 		product.setDescription(productRequest.getDescription());
+
 		product = this.productRepository.save(product);
+		if (product == null) {
+			logger.error("product not saved.");
+			throw new RuntimeException("product was not saved due to some exception");
+		}
 		logger.info("saveProduct API ended");
 		return product;
 	}
 
 	public Product findById(Long productId) {
 		logger.info("findById API started");
-		
+
 		Optional<Product> optional = this.productRepository.findById(productId);
 
-		if (optional.isPresent()) {
-			Product product = optional.get();
-			logger.info("findById API ended.");
-			return product;
-		} else {
-			logger.info(" Product not found : findById API ended.");
-			return null;
-			
+		if (!optional.isPresent()) {
+			logger.error("Product not found in Database");
+			throw new RuntimeException("product not found in database");
 		}
-		
+		logger.info("findById method ended.");
+		return optional.get();
+
 	}
 
 	public List<Product> findAll() {
 		return this.productRepository.findAll();
 	}
-	
+
 	/*
-	 * Pagination - fetching all records page by page with 
-	 * each page shows only certain number of records. 
+	 * Pagination - fetching all records page by page with each page shows only
+	 * certain number of records.
 	 * 
-	 * two parameters - 
-	 * page number - total number of pages,
-	 * page size - how many records needs to be stored in each page.
+	 * two parameters - page number - total number of pages, page size - how many
+	 * records needs to be stored in each page.
 	 * 
-	 * pagesize = 10, total number of records = 36
-	 * 0th page = 1 - 10
-	 * 1st page = 11 - 20
-	 * 2nd page = 21 - 30
-	 * 3rd page = 31 - 32
+	 * pagesize = 10, total number of records = 36 0th page = 1 - 10 1st page = 11 -
+	 * 20 2nd page = 21 - 30 3rd page = 31 - 32
 	 */
-	
+
 	public List<Product> getAllProductsWithPagination(Integer pageNumber, Integer pageSize) {
-		Page<Product> pageProducts =this.productRepository.findAll(PageRequest.of(pageNumber, pageSize, Sort.by("productName").ascending()));
-		
-		//converting pageOfProducts to listOfProducts and return it.
+		Page<Product> pageProducts = this.productRepository
+				.findAll(PageRequest.of(pageNumber, pageSize, Sort.by("productName").ascending()));
+
+		// converting pageOfProducts to listOfProducts and return it.
 		List<Product> listProducts = new ArrayList<>();
-		
-		for (Product pageProduct: pageProducts) {
+
+		for (Product pageProduct : pageProducts) {
 			listProducts.add(pageProduct);
 		}
 		return listProducts;
 	}
 
-	
 	public void deleteProductById(Long productId) {
 		this.productRepository.deleteById(productId);
 	}
@@ -123,7 +117,6 @@ public class ProductService {
 		}
 		return updatedProduct;
 	}
-
 
 	public Product updateProductViaPatch(Long productId, String quantity) {
 		Optional<Product> optional = this.productRepository.findById(productId);
